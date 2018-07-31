@@ -1,3 +1,3 @@
-# ESPic
+# PyMsg
 
-ESPic is a WiFi PIC programmer made for Computers and Computers Networks course at UNIVPM.
+PyMsg is a simple messaging service made for Computers and Computers Networks course at UNIVPM.
