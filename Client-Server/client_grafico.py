@@ -40,14 +40,13 @@ def richiedi_messaggi():
                         lista_messaggi.append(mess_diviso[0]+", Inviato da: "+mess_diviso[1]+ " Orario: "+mess_diviso[2])
             c.close()        
         elif c==-1:
-            avvisi.value="Errore di connessione, l'altro client potrebbe non essere connesso"
+            avvisi.value="Errore di connessione, il server potrebbe non essere disponibile"
     else:
         avvisi.value="Inserisci il tuo nome per ricevere messaggi"
 
 def invia_dati():
     if textbox.value=="":
-        avvisi.value="Non inviare messaggi vuoti"
-        return -1
+        #evitiamo che faccia qualcosa e basta
     if nome_destinatario.value=="":
         avvisi.value="Inserisci nome desinatario"
         return -1
@@ -65,7 +64,7 @@ def invia_dati():
         c.close()
         textbox.clear()            
     elif c==-1:
-        avvisi.value="Errore di connessione, l'altro client potrebbe non essere connesso"
+        avvisi.value="Errore di connessione, il server potrebbe non essere disponibile"
     
     
 if __name__ == "__main__":

@@ -72,7 +72,7 @@ class requestHanlerThread (Thread):
                 cur = conn.cursor()
                 cur.execute("INSERT INTO messaggi (mittente,destinatario,testo, letto) values (%s,%s,%s,false);",(mittente,destinatario,testo_messaggio))
                 
-                i+=1
+                i+=1 # a che serve i? dove sta num_client+=1 qui?
 
                 conn.commit()
                 cur.close()
@@ -97,7 +97,7 @@ class requestHanlerThread (Thread):
                 messaggio="richiesta non valida"
             self.conn.send(messaggio.encode())
             self.lock.acquire()
-            num_client-=num_client
+            num_client-=num_client # non dovrebbe essere num_client-=1?
             self.lock.release()
             print(f"Messaggio {messaggio} inviato a {self.ind_client}")
             self.conn.close()
@@ -135,7 +135,6 @@ def run_server(server,inizio,durata=0,log_file=""):
 
 
 if __name__ == "__main__":
-    frasi=["ciccio","pluto","pippo"]
     inizio=time.time()
     porta=int(sys.argv[1])
     backlog=int(sys.argv[2])
