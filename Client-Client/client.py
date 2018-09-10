@@ -1,8 +1,10 @@
-import socket,queue,sys
-import threading
+import socket,queue,sys,threading
 from guizero import App, TextBox, PushButton, Text, ListBox, info
 
+## Coda in cui verranno inseriti i messaggi arrivati 
 messaggi=queue.Queue()
+
+## Funzioni legate 
 def stampa_messagggi():
     try:
         lista_messaggi.append(messaggi.get_nowait())
@@ -18,29 +20,28 @@ class serverThread (threading.Thread):
       self.indirizzo = indirizzo
 
     def run(self):
-            thread_server = threading.currentThread()
-            try:
-                s=socket.socket()
-                s.bind(self.indirizzo)
-                s.listen(1)
-                s.setblocking(0)
-                print("[Server]Server inizializzato correttamente")
+        thread_server = threading.currentThread()
+        try:
+            self.s=socket.socket()
+            self.s.bind(self.indirizzo)
+            self.s.listen(1)
+            self.s.setblocking(0)
+            print("[Server]Server inizializzato correttamente")
+        except BlockingIOError:
+            pass
+        except socket.error as errore:
+            print(f"[Server]Ci sono stati problemi: {errore}")
+        while getattr(thread_server, "restaAttivo", True):
+            try:    
+                self.socket_client, self.indirizzo_client=self.s.accept()
+                print(self.indirizzo_client)
+                self.socket_client.setblocking(1)
+                self.richiesta=self.socket_client.recv(1024)
+                messaggi.put(self.richiesta.decode())
+                self.socket_client.send("[Server]Messaggio ricevuto".encode())
             except BlockingIOError:
                 pass
-            except socket.error as errore:
-                print(f"[Server]Ci sono stati problemi: {errore}")
-            while getattr(thread_server, "restaAttivo", True):
-                try:    
-                    socket_client, indirizzo_client=s.accept()
-                    print(indirizzo_client)
-                    socket_client.setblocking(1)
-                    richiesta=socket_client.recv(1024)
-                    #print(f"[Server]La richiesta è: {richiesta.decode()}")
-                    messaggi.put(richiesta.decode())
-                    socket_client.send("[Server]Messaggio ricevuto".encode())
-                except BlockingIOError:
-                    pass
-            s.close()
+        self.s.close()
 
 def socket_client(indirizzo):
     try:
@@ -59,8 +60,7 @@ def socket_client(indirizzo):
 def invia_dati():
     if textbox.value!="":
         c=socket_client(("localhost",porta_client))    
-        if c!=-1:
-            print(f"&{textbox.value}&")        
+        if c!=-1:       
             c.send(textbox.value.encode())
             risposta= c.recv(1024)
             print(str(risposta.decode()))
@@ -74,9 +74,13 @@ def invia_dati():
         avvisi.value="Non inviare messaggi vuoti"
     
 if __name__ == "__main__":
-    
-    porta_server=int(sys.argv[1])
-    porta_client=int(sys.argv[2])
+    try:
+        porta_server=int(sys.argv[1])
+        indirizzo_ip_client=str(sys.argv[2])
+        porta_client=int(sys.argv[3])
+    except:
+        print("Inserisci in ordine: porta del server, indirizzo ip del client, porta del client ")
+        sys.exit(1)
     interfaccia= App(layout="grid")
     messaggi_ricevuti = Text(interfaccia, text="Messaggi ricevuti",align="left",grid=[0,0])
     lista_messaggi=ListBox(interfaccia,scrollbar=True,align="left",command=apri_messaggio,grid=[0,2,6,1])
