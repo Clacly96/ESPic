@@ -1,105 +1,166 @@
-import socket
-import sys
-import time
-from threading import Thread
-import threading
+import socket,sys,time,threading,pickle
+import mysql.connector
+import DBsetting
 
-import psycopg2
+## ------Inizio Funzioni per il db---------
+def connessioneDb():
+    db = mysql.connector.connect(
+    host=DBsetting.host,
+    user=DBsetting.user,
+    passwd=DBsetting.passwd,
+    database=DBsetting.database)
+    return db
+
+def controlloUtente(username):
+    db=connessioneDb()
+    cursore=db.cursor()
+    cursore.execute("SELECT username FROM utenti WHERE username=%s",(username,))
+    risposta=cursore.fetchone()
+    cursore.close()
+    db.close()
+    if risposta:
+        return True
+    else:
+        return False
+    
+def controlloPassword(username,password):
+    db=connessioneDb()
+    cursore=db.cursor()
+    cursore.execute("SELECT username,password FROM utenti WHERE username=%s",(username,))
+    risposta=cursore.fetchone()
+    cursore.close()
+    db.close()
+    if risposta:
+        username,pwd=risposta
+        username=username.decode('utf-8')
+        pwd=pwd.decode('utf-8')
+        if pwd==password:
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+
+def inserisciUtente(username,password):
+    db=connessioneDb()
+    cursore=db.cursor()
+    cursore.execute("INSERT INTO utenti (username, password) VALUES (%s,%s)",(username,password))
+    db.commit()
+    cursore.close()
+    db.close()
+
+def estraiUtenti():
+    db=connessioneDb()
+    cursore=db.cursor()
+    cursore.execute("SELECT username FROM utenti ORDER BY username")
+    risposta=cursore.fetchall()
+    cursore.close()
+    db.close()
+    return risposta
 
 
-i=0 # per testing
+##------Fine funzioni DB-----------
+
 num_client=0
 spegni=False
 
-class requestHanlerThread (Thread):
-    def __init__(self, socket, connessione,indirizzo_client, log_file):
-      Thread.__init__(self)
+class requestHanlerThread (threading.Thread):
+    def __init__(self, socket, connessione,indirizzo_client):
+      threading.Thread.__init__(self)
       self.conn = connessione
       self.ind_client=indirizzo_client
       self.lock=threading.Lock()
-      self.log=log_file
       self.socket=socket
-      self.lock_spegnimento=threading.Lock()
 
     def run(self):
-        global i
         global spegni
-        global num_client
-        if spegni==False:
-            self.lock.acquire()
-            num_client+=num_client
-            self.lock.release()
+        if spegni==False:   #se il server è in fase di spegnimento, nuovi thread non gestiscono la richiesta ma si chiudono direttamente            
             self.conn.setblocking(True) # imposta la connessione corrente come bloccante
             self.conn.settimeout(200) # setta il timeout per la connessione corrente, in secondi
             print(f"Connessione Server - Client Stabilita: {self.ind_client}\n")
-            richiesta=self.conn.recv(4096)
-            print(richiesta.decode())
-            testo_richiesta=richiesta.decode().split("&$%")
-            if(testo_richiesta[0].upper()=="GET"):
+            self.richiesta=self.conn.recv(4096)
+            self.testo_richiesta=pickle.loads(self.richiesta)
+
+            if self.testo_richiesta[0].upper()=="GET" and len(self.testo_richiesta)>1:
                 self.lock.acquire()
-                #qui va la scrittura del file di log
-                num_client+=1                
-                destinatario=testo_richiesta[1]
 
-                conn=psycopg2.connect(database="pymsg",user="calcolatori",password="calcolatori")
-                cur = conn.cursor()
-                cur.execute("select id,testo,mittente,data from messaggi where letto=false and destinatario=%s",(destinatario,))
+                self.destinatario=str(self.testo_richiesta[1])
 
-                selezione=cur.fetchall()
-                messaggio=""
-                messaggi_letti=[]
-                if selezione:
-                    for riga in selezione:
+                self.db=connessioneDb()
+                self.cursore = self.db.cursor()
+                self.cursore.execute("SELECT id,testo,mittente,data FROM messaggi WHERE letto=false AND destinatario=%s",(self.destinatario,))
+                self.selezione=self.cursore.fetchall()
+
+                self.messaggio=[]
+                self.messaggi_letti=[]
+                if self.selezione:
+                    for riga in self.selezione:
+                        
                         ID,testo,mittente,data=riga
-                        messaggio+=str(testo)+"&$%"+str(mittente)+"&$%"+str(data)+"/&/"
-                        messaggi_letti.append(ID)
-                    cur.execute("update messaggi set letto=true where id in %s",(tuple(messaggi_letti),))  
-                i+=1
-                
-                conn.commit()
-                cur.close()
-                conn.close()
+                        self.messaggio.append([str(testo.decode('utf-8')),str(mittente.decode('utf-8')),str(data)])                     
+                        self.messaggi_letti.append(ID)
+
+                    ## Aggiornamento messaggi letti
+                    format_strings = ','.join(['%s'] * len(self.messaggi_letti))
+                    self.cursore.execute("UPDATE messaggi SET letto=true WHERE id IN (%s)" % format_strings,tuple(self.messaggi_letti))
+                    self.db.commit()               
+
+                ## Chiusura connessione db
+                self.cursore.close()
+                self.db.close()
 
                 self.lock.release()
-            elif(testo_richiesta[0].upper()=="POST" and len(testo_richiesta)>1):
-                #esempio post: POST&$%testo del messaggio&$%nome_destinatario&$%nome_mittente
+            elif(self.testo_richiesta[0].upper()=="POST" and len(self.testo_richiesta)>1):
                 self.lock.acquire()
-                #qui va la scrittura del file di log
-                testo_messaggio=testo_richiesta[1]
-                destinatario=testo_richiesta[2]
-                mittente=testo_richiesta[3]
-                conn=psycopg2.connect(database="pymsg",user="calcolatori",password="calcolatori")
-                cur = conn.cursor()
-                cur.execute("INSERT INTO messaggi (mittente,destinatario,testo, letto) values (%s,%s,%s,false);",(mittente,destinatario,testo_messaggio))
-                
-                i+=1 # a che serve i? dove sta num_client+=1 qui?
 
-                conn.commit()
-                cur.close()
-                conn.close()
+                testo_messaggio=self.testo_richiesta[1]
+                destinatario=self.testo_richiesta[2]
+                mittente=self.testo_richiesta[3]
+
+                self.db=connessioneDb()
+                self.cursore = self.db.cursor()
+                self.cursore.execute("INSERT INTO messaggi (mittente,destinatario,testo, letto) values (%s,%s,%s,false);",(mittente,destinatario,testo_messaggio))
                 
-                messaggio="inviato"
-                i+=1
+                self.db.commit()
+                self.cursore.close()
+                self.db.close()
+                
+                self.messaggio="inviato"
+
                 self.lock.release()
-            elif(testo_richiesta[0]=="spegni"):
-                self.lock_spegnimento.acquire()
-                spegni=True
-                while num_client!=0 :
-                    continue
-                messaggio="hai spento il server"
-                self.conn.send(messaggio.encode())
-                self.conn.close()
-                self.socket.close()
-                self.lock_spegnimento.release()
-                print("\nMi sto spegnendo ciaoooooo")
-                sys.exit(0)
+
+            elif(self.testo_richiesta[0].upper()=="SERVICE" and len(self.testo_richiesta)>1):
+                self.azione=self.testo_richiesta[1]
+
+                if(self.azione=="regUser"):
+                    self.username=self.testo_richiesta[2]
+                    self.password=self.testo_richiesta[3]
+                    self.risposta=controlloUtente(self.username)
+                    if self.risposta==True:
+                        self.messaggio="ESISTENTE"
+                    else:
+                        inserisciUtente(self.username,self.password)
+                        self.messaggio="INSERITO"
+
+                elif(self.azione=="checkPwd"):
+                    self.username=str(self.testo_richiesta[2])
+                    self.password=str(self.testo_richiesta[3])
+                    self.risposta=controlloPassword(self.username,self.password)
+
+                    if self.risposta==True:                        
+                        self.messaggio="CORRETTO"
+                    else:
+                        self.messaggio="ERRORE"
+
+                elif(self.azione=="estraiUtenti"):
+                    self.risposta=estraiUtenti()
+                    self.messaggio=self.risposta
             else:
-                messaggio="richiesta non valida"
-            self.conn.send(messaggio.encode())
-            self.lock.acquire()
-            num_client-=num_client # non dovrebbe essere num_client-=1?
-            self.lock.release()
-            print(f"Messaggio {messaggio} inviato a {self.ind_client}")
+                self.messaggio="richiesta non valida"
+            self.messaggio_ser=pickle.dumps(self.messaggio)
+            self.conn.send(self.messaggio_ser)
+            print(f"Messaggio {self.messaggio} inviato a {self.ind_client}")
             self.conn.close()
         self.conn.close()
 
@@ -118,16 +179,16 @@ def launch(porta,backlog):
             return -1
         launch(porta, backlog)
     return server
-
-def run_server(server,inizio,durata=0,log_file=""):
-    #qui va l'apertura' del file di log
+threads=[]
+def run_server(server,inizio,durata=0):
+    global threads
     while (time.time()-inizio)<durata or durata==0: # differenza conteggiata in secondi
         try:
             conn, indirizzo_client = server.accept() #conn = socket_client
-            thread_req=requestHanlerThread(server,conn,indirizzo_client,log_file)
+            thread_req=requestHanlerThread(server,conn,indirizzo_client)
             thread_req.start()
+            threads.append(thread_req)            
         except BlockingIOError:
-            #print("niente richieste "+str(time.time()-inizio)) #testing
             pass
         except OSError:
             sys.exit(1)
@@ -136,26 +197,29 @@ def run_server(server,inizio,durata=0,log_file=""):
 
 if __name__ == "__main__":
     inizio=time.time()
-    porta=int(sys.argv[1])
-    backlog=int(sys.argv[2])
-    #aggiungere parametro sys.argv[3] per il tempo di timeout del server
-    durata=0 # tempo di vita del server, se 0 significa infinito
+    try:
+        porta=int(sys.argv[1])
+        backlog=int(sys.argv[2])
+        durata=int(sys.argv[3])
+    except:
+        print("Inserire: porta, backlog, timeout (0 per tempo illimitato)")
+        sys.exit(1)
     server=launch(porta,backlog)
-    log_file="" #path del file di log
-    if(server!=-1):
-        while True:
-            try:
-                stato=run_server(server,inizio,durata,log_file)
-                if(stato==0): #stato spento
-                    break
-            except KeyboardInterrupt: # condizione di spegnimento del server
-                exit=input("\n Vuoi spegnere il server? (s per spegnerlo): ")
-                if exit.lower()=="s":
-                    print("\nMi sto spegnendo ciaoooooo")
-                    server.close()
-                    sys.exit(0)
+    if server!=-1:
+        try:
+            stato=run_server(server,inizio,durata)
+        except KeyboardInterrupt: # condizione di spegnimento del server
+            exit=input("\n Vuoi spegnere il server? (s per spegnerlo): ")
+            if exit.lower()=="s":
+                for thread in threads:
+                    thread.join()
+                server.close()
+                print("\nMi sto spegnendo ciaoooooo")
+                sys.exit(0)
 
-                    #qui va la chiusura del file di log
+            else:
                 pass
-        print("\nMi sto spegnendo ciaoooooo")
-        server.close()
+    else:
+        print("Si sono verificati errori")
+        sys.exit(1)
+
