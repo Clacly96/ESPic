@@ -1,4 +1,4 @@
 host="localhost"
-user="calcolatori"
-passwd="calcolatori"
+user=""
+passwd=""
 database="pymsg"
