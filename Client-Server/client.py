@@ -1,7 +1,7 @@
-import socket
-import threading,pickle
+import threading,pickle,sys,socket
 from guizero import App, TextBox, PushButton, Text, ListBox,info,Window,error
 username="" # Variabile che conterrà l'username dell'utente
+indirizzo=()
 
 def apri_messaggio(selezionato):
     info("Messaggio",str(selezionato))
@@ -18,7 +18,7 @@ def mostra_registrazione():
 
 def login():
     global username
-    c=socket_client(("127.0.0.1",15000))
+    c=socket_client()
     if c!=-1:
         r=["SERVICE","checkPwd",usernameLogin.value,passwordLogin.value]
         r_ser=pickle.dumps(r)    
@@ -42,7 +42,7 @@ def login():
 
 def registrazione():
     global username
-    c=socket_client(("127.0.0.1",15000))
+    c=socket_client()
     if c!=-1:
         r=["SERVICE","regUser",usernameReg.value,passwordReg.value]
         r_ser=pickle.dumps(r)
@@ -65,7 +65,8 @@ def registrazione():
     elif c==-1:
         error("Errore","Errore di connessione, il server potrebbe non essere disponibile")
 
-def socket_client(indirizzo):
+def socket_client():
+    global indirizzo
     try:
         c = socket.socket()
         c.connect(indirizzo)
@@ -81,7 +82,7 @@ def socket_client(indirizzo):
 def richiedi_messaggi():
     global username    
     if username!="":
-        c=socket_client(("127.0.0.1",15000))    
+        c=socket_client()    
         if c!=-1:
             avvisi.clear()
             r=["GET",str(username)]
@@ -107,7 +108,7 @@ def invia_dati():
     if lista_utenti.value==None:
         avvisi.value="Inserisci nome desinatario"
         return -1
-    c=socket_client(("127.0.0.1",15000))    
+    c=socket_client()    
     if c!=-1:
         testo_messaggio=textbox.value
         richiesta=["POST",str(testo_messaggio),str(lista_utenti.value),username]
@@ -121,7 +122,7 @@ def invia_dati():
         error("Errore","Errore di connessione, il server potrebbe non essere disponibile")
 
 def richiedi_utenti():
-    c=socket_client(("127.0.0.1",15000))    
+    c=socket_client()    
     if c!=-1:
         richiesta=["SERVICE","estraiUtenti"]
         richiesta_ser=pickle.dumps(richiesta)
@@ -141,7 +142,14 @@ def richiedi_utenti():
     
 
 if __name__ == "__main__":
-    
+    try:
+        indirizzo_ip_server=str(sys.argv[1])
+        porta_server=int(sys.argv[2])
+    except:
+        print("Inserisci in ordine: indirizzo ip del server, porta del server ")
+        sys.exit(1)
+
+    indirizzo=(indirizzo_ip_server,porta_server)
 
     interfaccia= App(layout="grid",width=700,height=700,title="pymsg")
     interfaccia.disable()
@@ -155,7 +163,6 @@ if __name__ == "__main__":
     tastoInvio = PushButton(interfaccia, text="Invia",align="left", command=invia_dati,grid=[5,7])
     labelUsername=Text(interfaccia, text="",align="left",grid=[0,9])
     Labeldest=Text(interfaccia, text="Inserisci destinatario",align="left",grid=[0,11])
-    #nome_destinatario=TextBox(interfaccia,width=20,grid=[0,12,4,1])
     lista_utenti=ListBox(interfaccia,scrollbar=True,align="left",grid=[0,12,6,1])
     lista_utenti.width=80
     Labelavvisi=Text(interfaccia, text="Avvisi:",align="left",grid=[0,13])
@@ -185,7 +192,4 @@ if __name__ == "__main__":
     PushButton(finestraReg, text="Registrati",align="left", command=registrazione,grid=[0,6])
     PushButton(finestraReg, text="Login",align="left", command=mostra_login,grid=[0,9])
 
-    interfaccia.display()
-
-
-    
+    interfaccia.display()    

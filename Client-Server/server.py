@@ -65,7 +65,7 @@ def estraiUtenti():
 num_client=0
 spegni=False
 
-class requestHanlerThread (threading.Thread):
+class requestHandlerThread (threading.Thread):
     def __init__(self, socket, connessione,indirizzo_client):
       threading.Thread.__init__(self)
       self.conn = connessione
@@ -185,7 +185,7 @@ def run_server(server,inizio,durata=0):
     while (time.time()-inizio)<durata or durata==0: # differenza conteggiata in secondi
         try:
             conn, indirizzo_client = server.accept() #conn = socket_client
-            thread_req=requestHanlerThread(server,conn,indirizzo_client)
+            thread_req=requestHandlerThread(server,conn,indirizzo_client)
             thread_req.start()
             threads.append(thread_req)            
         except BlockingIOError:

@@ -58,9 +58,9 @@ This function extracts all user from the DB.
 It returns a list of tuple.
 
 ```python
-class requestHanlerThread (threading.Thread):
+class requestHandlerThread (threading.Thread):
 ```
-This class extends threadin.Thread and it is used to handle concurrent requests in multiple threads.
+This class extends threading.Thread and it is used to handle concurrent requests in multiple threads.
 
 #### Parameters:
     socket (socket object) - It's the created socket server
