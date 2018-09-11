@@ -75,7 +75,7 @@ This class extends threading.Thread and it is used to handle concurrent requests
         -POST: for send messages to other people and save them on DB.
             E.g. ["POST","Hi!","Mario","Luigi"] will put the message "Hi!" from Mario to Luigi in the DB.
         -SERVICE: used for service's request:
-            -regUser: register a new user on the DB
+            -regUser: registers a new user on the DB
             -checkPwd: will check if login crediantials are correct
             -estraiUtenti: extracts all user from DB and send them to client
 
@@ -130,7 +130,7 @@ This function will check with the server if provided credential are correct. It 
 ```python
 def registrazione():
 ```
-This function checks if the username already exixsts and register it if not exists. It will show an error message if user already exists.
+This function checks if the username already exixsts and registers it if not exists. It will show an error message if user already exists.
 
 ```python
 def socket_client():
