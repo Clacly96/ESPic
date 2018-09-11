@@ -16,7 +16,7 @@ py nodo.py server_port ip_client client_port
 ```python
 def stampa_messagggi():
 ```
-This function inserts in the listbox of the grafical interface, the list of the received messages. Messages are extracted from the queue "messaggi".
+This function inserts into listbox of the graphic interface the list of the received messages. Messages are extracted from the queue "messaggi".
 
 ```python
 class serverThread (threading.Thread):
