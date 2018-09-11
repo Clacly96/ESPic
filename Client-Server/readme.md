@@ -1,21 +1,21 @@
-#Server
-##Installation:
-###Dependencies:
+# Server
+## Installation:
+### Dependencies:
 Install mysql server from the official site and then the mysql-connector via pip:
 ```
 pip install mysql-connector
 ```
-###Download
+### Download
 You can clone the repository or download zipped repository directly from the repository.
 
-###Usage
+### Usage
 ```
 py server.py port_num backlog_num expire_time
 ```
-###Close
+### Close
 Close the server with Ctrl+C and then type s.
 
-##Function description
+## Function description
 
 ```python
 def connessioneDb()
@@ -26,7 +26,7 @@ It returns a db object.
 ```python
 def controlloUtente(username)
 ```
-####Parameters:
+#### Parameters:
     username (string) 
 
 This funcion will check if the provided username is in the DB.
@@ -35,7 +35,7 @@ It returns True if username exists, False otherwise.
 ```python
 def controlloPassword(username,password)
 ```
-####Parameters:
+#### Parameters:
     username (string)
     password (string)
 
@@ -45,7 +45,7 @@ It returns True or False.
 ```python
 def inserisciUtente(username,password)
 ```
-####Parameters:
+#### Parameters:
     username (string)
     password (string)
 
@@ -62,12 +62,12 @@ class requestHanlerThread (threading.Thread):
 ```
 This class extends threadin.Thread and it is used to handle concurrent requests in multiple threads.
 
-####Parameters:
+#### Parameters:
     socket (socket object) - It's the created socket server
     connessione (socket object) - It's the connected client
     indirizzo_client (string) - Address of the client
 
-####Type of request:
+#### Type of request:
     Syntax: <action><parameter>{<parameter>}
 #####   Actions:
         -GET: for receive incoming messages from the server. 
@@ -82,7 +82,7 @@ This class extends threadin.Thread and it is used to handle concurrent requests 
 ```python
 def launch(porta,backlog):
 ``` 
-####Parameters:
+#### Parameters:
     porta (int): the port on which the server will listen for request
     backlog (int): maximum number of pending requests
 
@@ -92,7 +92,7 @@ It return a socket object or -1 in case of errors
 ```python
 def run_server(server,inizio,durata=0)
 ``` 
-####Parameters:
+#### Parameters:
     server (socket object)
     inizio (float): the inizial time
     durata (int): maximum seconds of life of the server (0 is used for unlimited life)
