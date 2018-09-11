@@ -98,3 +98,56 @@ def run_server(server,inizio,durata=0)
     durata (int): maximum seconds of life of the server (0 is used for unlimited life)
 
 This function will accept requests and start a new thread to handle the request.
+
+
+# Client
+### Dependencies:
+Install GuiZero via pip:
+```
+pip install guizero
+```
+### Download
+You can clone the repository or download zipped repository directly from the repository.
+
+### Usage
+```
+py client.py ip_server server_port
+```
+## Function description
+```python
+def mostra_login():
+``` 
+```python
+def mostra_registrazione():
+```
+These function only show login or registration window
+
+```python
+def login():
+```
+This function will check with the server if provided credential are correct. It takes parameters directly from graphic interface.
+
+```python
+def registrazione():
+```
+This function checks if the username already exixsts and register it if not exists. It will show an error message if user already exists.
+
+```python
+def socket_client():
+```
+This function opens a socket client and then returns it. If there are any errors, it will return -1.
+
+```python
+def richiedi_messaggi():
+```
+This function will request to the server incoming messages for the logged user. It will print messages on graphic interface.
+
+```python
+def invia_dati():
+```
+This function will send message to the server. It automatically takes body of message and receiver from the graphic interface.
+
+```python
+def richiedi_utenti():
+```
+This function will request user's list and then print it in the graphic interface.
