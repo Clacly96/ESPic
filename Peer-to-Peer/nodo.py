@@ -30,7 +30,8 @@ class serverThread (threading.Thread):
         except BlockingIOError:
             pass
         except socket.error as errore:
-            print(f"[Server]Ci sono stati problemi: {errore}")
+            print(f"[Server]Ci sono stati problemi: {errore} server non inizializzato")
+            sys.exit(1)
         while getattr(thread_server, "restaAttivo", True):
             try:    
                 self.socket_client, self.indirizzo_client=self.s.accept()
@@ -59,7 +60,7 @@ def socket_client(indirizzo):
 
 def invia_dati():
     if textbox.value!="":
-        c=socket_client(("localhost",porta_client))    
+        c=socket_client((indirizzo_ip_client,porta_client))    
         if c!=-1:       
             c.send(textbox.value.encode())
             risposta= c.recv(1024)
@@ -84,6 +85,7 @@ if __name__ == "__main__":
     interfaccia= App(layout="grid")
     messaggi_ricevuti = Text(interfaccia, text="Messaggi ricevuti",align="left",grid=[0,0])
     lista_messaggi=ListBox(interfaccia,scrollbar=True,align="left",command=apri_messaggio,grid=[0,2,6,1])
+    lista_messaggi.width=80
     lista_messaggi.repeat(500,stampa_messagggi)
     text = Text(interfaccia, text="Inserisci il testo del messaggio",align="left",grid=[0,6])
     textbox = TextBox(interfaccia,grid=[0,7,4,1])
