@@ -9,7 +9,9 @@ Socket are based on the Unix file model, so the operations on socket are open, c
 
 ## PyMsg schemas
 PyMsg peer-to-peer version:
+
 ![Schema](https://github.com/Clacly96/PyMsg/blob/master/docs/p2p.png)
 
 PyMsg Client-Server version:
+
 ![Schema](https://github.com/Clacly96/PyMsg/blob/master/docs/CS.png)
