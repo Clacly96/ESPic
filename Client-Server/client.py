@@ -180,6 +180,7 @@ if __name__ == "__main__":
     usernameLogin=TextBox(finestraLog,width=20,grid=[0,2])
     Text(finestraLog, text="Password:",align="left",grid=[0,3])
     passwordLogin=TextBox(finestraLog,width=20,grid=[0,4])
+    passwordLogin.tk.config(show="*")
     PushButton(finestraLog, text="Login",align="left", command=login,grid=[0,6])
     PushButton(finestraLog, text="Registrati",align="left", command=mostra_registrazione,grid=[0,9])
 
@@ -189,6 +190,7 @@ if __name__ == "__main__":
     usernameReg=TextBox(finestraReg,width=20,grid=[0,2])
     Text(finestraReg, text="Password:",align="left",grid=[0,3])
     passwordReg=TextBox(finestraReg,width=20,grid=[0,4])
+    passwordReg.tk.config(show="*")
     PushButton(finestraReg, text="Registrati",align="left", command=registrazione,grid=[0,6])
     PushButton(finestraReg, text="Login",align="left", command=mostra_login,grid=[0,9])
 
