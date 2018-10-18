@@ -1,4 +1,12 @@
 # PyMsg
+
+## Why PyMsg?
+This project has been created as a mini-thesis for the main course “Computer Systems and Networks” related exam. Its purpose is to explain the Socket’s operating principles, and how they enable to establish connections and exchange messages in order to create protocols and services.
+The project was carried out by three students from Marche Polytechnic University:
+-Broccoletti Roberto
+-Spada Claudio
+-Spada Valeria Anna
+
 ## What is PyMsg?
 PyMsg is a python lightweight messaging service composed by two type of services: one with a central server and the other one is a P2P implementation.
 Both services are based on python socket implementation.
