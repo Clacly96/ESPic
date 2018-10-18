@@ -30,7 +30,7 @@ def controlloUtente(username)
     username (string) 
 
 This funcion will check if the provided username is in the DB.
-It returns True if username exists, False otherwise.
+It returns True if the username exists, False otherwise.
 
 ```python
 def controlloPassword(username,password)
@@ -39,7 +39,7 @@ def controlloPassword(username,password)
     username (string)
     password (string)
 
-This function will check if user exists and password is valid.
+This function will check if the user exists and password is valid.
 It returns True or False.
 
 ```python
@@ -87,7 +87,7 @@ def launch(porta,backlog):
     backlog (int): maximum number of pending requests
 
 This function will start a socket server on the specified port.
-It return a socket object or -1 in case of errors
+It returns a socket object or -1 in case of errors
 
 ```python
 def run_server(server,inizio,durata=0)
@@ -125,12 +125,12 @@ These function only show login or registration window
 ```python
 def login():
 ```
-This function will check with the server if provided credential are correct. It takes parameters directly from graphic interface.
+This function will check with the server if provided credentials are correct. It takes parameters directly from graphic interface.
 
 ```python
 def registrazione():
 ```
-This function checks if the username already exixsts and registers it if not exists. It will show an error message if user already exists.
+This function checks if the username already exixsts and register it if not exists. It will show an error message if user already exists.
 
 ```python
 def socket_client():
@@ -140,12 +140,12 @@ This function opens a socket client and then returns it. If there are any errors
 ```python
 def richiedi_messaggi():
 ```
-This function will request to the server incoming messages for the logged user. It will print messages on graphic interface.
+This function will request to server incoming messages for the logged user. It will print messages on the graphic interface.
 
 ```python
 def invia_dati():
 ```
-This function will send message to the server. It automatically takes body of message and receiver from the graphic interface.
+This function will send message to the server. It automatically takes the body of message and the receiver from the graphic interface.
 
 ```python
 def richiedi_utenti():
